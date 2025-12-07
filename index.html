@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="kk">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>AI Geometry Generator</title>
   <style>
     body {
@@ -81,7 +81,7 @@
   <p class="subtitle">«Сипатта → AI модель жасайды → дайын 3D»</p>
 
   <div class="controls">
-    <input id="prompt" type="text" placeholder="мысалы: сфера, тор, куб, гироид, вороной" />
+    <input id="prompt" type="text" placeholder="сфера, куб, тор, гироид, вороной" />
     <button id="generateBtn">Модель жасау</button>
   </div>
 
@@ -90,112 +90,111 @@
   </div>
 </div>
 
-<!-- Three.js кітапханалары -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
 
 <script>
-  const canvas = document.getElementById("scene");
+const canvas = document.getElementById("scene");
+const wrapper = document.querySelector(".scene-wrapper");
 
-  const renderer = new THREE.WebGLRenderer({
-    canvas: canvas,
-    antialias: true,
-    alpha: true
-  });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setClearColor(0x000000, 0);
 
-  const scene = new THREE.Scene();
+const scene = new THREE.Scene();
 
-  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-  camera.position.set(3, 3, 5);
+const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+camera.position.set(3, 3, 5);
 
-  const controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
 
-  scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-  const light = new THREE.DirectionalLight(0xffffff, 1);
-  light.position.set(5, 5, 5);
-  scene.add(light);
+scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(5, 5, 5);
+scene.add(light);
 
-  let obj = null;
+let obj = null;
 
-  function makeFromText(text) {
-    text = text.toLowerCase();
+function makeFromText(text) {
+  text = text.toLowerCase();
 
-    if (obj) scene.remove(obj);
+  if (obj) scene.remove(obj);
 
-    let geometry;
-    let material = new THREE.MeshStandardMaterial({ color: 0x6366f1 });
+  let geometry;
+  let material = new THREE.MeshStandardMaterial({ color: 0x6366f1 });
 
-    if (text.includes("сфера")) {
-      geometry = new THREE.SphereGeometry(1, 64, 64);
-    } 
-    else if (text.includes("тор")) {
-      geometry = new THREE.TorusGeometry(1, 0.4, 64, 128);
-    } 
-    else if (text.includes("куб")) {
-      geometry = new THREE.BoxGeometry(2, 2, 2);
-    } 
-    else if (text.includes("гироид")) {
-      geometry = new THREE.PlaneGeometry(3, 3, 100, 100);
-      const pos = geometry.attributes.position;
-      for (let i = 0; i < pos.count; i++) {
-        let x = pos.getX(i);
-        let y = pos.getY(i);
-        let z = Math.sin(x * 2) + Math.cos(y * 2);
-        pos.setZ(i, z * 0.3);
-      }
-      geometry.computeVertexNormals();
-      material.side = THREE.DoubleSide;
-    } 
-    else if (text.includes("вороной")) {
-      obj = new THREE.Group();
-      const dotGeo = new THREE.SphereGeometry(0.08, 12, 12);
-      for (let i = 0; i < 60; i++) {
-        const m = new THREE.Mesh(
-          dotGeo,
-          new THREE.MeshStandardMaterial({ color: 0x0ea5e9 })
-        );
-        m.position.set(
-          (Math.random() - 0.5) * 2,
-          (Math.random() - 0.5) * 2,
-          (Math.random() - 0.5) * 2
-        );
-        obj.add(m);
-      }
-      scene.add(obj);
-      return;
-    } 
-    else {
-      geometry = new THREE.IcosahedronGeometry(1.2, 1);
+  if (text.includes("сфера")) {
+    geometry = new THREE.SphereGeometry(1, 64, 64);
+  } 
+  else if (text.includes("тор")) {
+    geometry = new THREE.TorusGeometry(1, 0.4, 64, 128);
+  } 
+  else if (text.includes("куб")) {
+    geometry = new THREE.BoxGeometry(2, 2, 2);
+  } 
+  else if (text.includes("гироид")) {
+    geometry = new THREE.PlaneGeometry(3, 3, 120, 120);
+    const pos = geometry.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      let x = pos.getX(i);
+      let y = pos.getY(i);
+      let z = Math.sin(x * 2) + Math.cos(y * 2);
+      pos.setZ(i, z * 0.3);
     }
-
-    obj = new THREE.Mesh(geometry, material);
+    geometry.computeVertexNormals();
+    material.side = THREE.DoubleSide;
+  } 
+  else if (text.includes("вороной")) {
+    obj = new THREE.Group();
+    const dotGeo = new THREE.SphereGeometry(0.08, 12, 12);
+    for (let i = 0; i < 60; i++) {
+      const m = new THREE.Mesh(
+        dotGeo,
+        new THREE.MeshStandardMaterial({ color: 0x0ea5e9 })
+      );
+      m.position.set(
+        (Math.random() - 0.5) * 2,
+        (Math.random() - 0.5) * 2,
+        (Math.random() - 0.5) * 2
+      );
+      obj.add(m);
+    }
     scene.add(obj);
+    return;
+  } 
+  else {
+    geometry = new THREE.IcosahedronGeometry(1.2, 1);
   }
 
-  function resize() {
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
-    renderer.setSize(w, h, false);
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-  }
+  obj = new THREE.Mesh(geometry, material);
+  scene.add(obj);
+}
 
-  document.getElementById("generateBtn").onclick = () => {
-    const val = document.getElementById("prompt").value;
-    makeFromText(val);
-  };
+function resize() {
+  const w = wrapper.clientWidth;
+  const h = wrapper.clientHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
 
-  function animate() {
-    requestAnimationFrame(animate);
-    if (obj) obj.rotation.y += 0.01;
-    controls.update();
-    renderer.render(scene, camera);
-  }
+document.getElementById("generateBtn").onclick = () => {
+  const val = document.getElementById("prompt").value;
+  makeFromText(val);
+};
 
-  resize();
-  makeFromText("сфера");
-  animate();
+function animate() {
+  requestAnimationFrame(animate);
+  if (obj) obj.rotation.y += 0.01;
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+resize();
+makeFromText("сфера");
+animate();
+
+window.addEventListener("resize", resize);
 </script>
 
 </body>
