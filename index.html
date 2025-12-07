@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Geometry Generator</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f8fafc, #e0e7ff);
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .app {
+      width: 95%;
+      max-width: 900px;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      text-align: center;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 14px;
+      opacity: 0.7;
+      margin-bottom: 16px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #c7d2fe;
+      outline: none;
+    }
+
+    button {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      background: #6366f1;
+      color: white;
+      cursor: pointer;
+    }
+
+    .scene-wrapper {
+      width: 100%;
+      height: 420px;
+      background: #eef2ff;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <h1>AI Geometry Generator</h1>
+  <p class="subtitle">«Сипатта → AI модель жасайды → дайын 3D»</p>
+
+  <div class="controls">
+    <input id="prompt" type="text" placeholder="мысалы: сфера, тор, куб, гироид, вороной" />
+    <button id="generateBtn">Модель жасау</button>
+  </div>
+
+  <div class="scene-wrapper">
+    <canvas id="scene"></canvas>
+  </div>
+</div>
+
+<!-- Three.js кітапханалары -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+  const canvas = document.getElementById("scene");
+
+  const renderer = new THREE.WebGLRenderer({
+    canvas: canvas,
+    antialias: true,
+    alpha: true
+  });
+
+  const scene = new THREE.Scene();
+
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+  camera.position.set(3, 3, 5);
+
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+  const light = new THREE.DirectionalLight(0xffffff, 1);
+  light.position.set(5, 5, 5);
+  scene.add(light);
+
+  let obj = null;
+
+  function makeFromText(text) {
+    text = text.toLowerCase();
+
+    if (obj) scene.remove(obj);
+
+    let geometry;
+    let material = new THREE.MeshStandardMaterial({ color: 0x6366f1 });
+
+    if (text.includes("сфера")) {
+      geometry = new THREE.SphereGeometry(1, 64, 64);
+    } 
+    else if (text.includes("тор")) {
+      geometry = new THREE.TorusGeometry(1, 0.4, 64, 128);
+    } 
+    else if (text.includes("куб")) {
+      geometry = new THREE.BoxGeometry(2, 2, 2);
+    } 
+    else if (text.includes("гироид")) {
+      geometry = new THREE.PlaneGeometry(3, 3, 100, 100);
+      const pos = geometry.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        let x = pos.getX(i);
+        let y = pos.getY(i);
+        let z = Math.sin(x * 2) + Math.cos(y * 2);
+        pos.setZ(i, z * 0.3);
+      }
+      geometry.computeVertexNormals();
+      material.side = THREE.DoubleSide;
+    } 
+    else if (text.includes("вороной")) {
+      obj = new THREE.Group();
+      const dotGeo = new THREE.SphereGeometry(0.08, 12, 12);
+      for (let i = 0; i < 60; i++) {
+        const m = new THREE.Mesh(
+          dotGeo,
+          new THREE.MeshStandardMaterial({ color: 0x0ea5e9 })
+        );
+        m.position.set(
+          (Math.random() - 0.5) * 2,
+          (Math.random() - 0.5) * 2,
+          (Math.random() - 0.5) * 2
+        );
+        obj.add(m);
+      }
+      scene.add(obj);
+      return;
+    } 
+    else {
+      geometry = new THREE.IcosahedronGeometry(1.2, 1);
+    }
+
+    obj = new THREE.Mesh(geometry, material);
+    scene.add(obj);
+  }
+
+  function resize() {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+
+  document.getElementById("generateBtn").onclick = () => {
+    const val = document.getElementById("prompt").value;
+    makeFromText(val);
+  };
+
+  function animate() {
+    requestAnimationFrame(animate);
+    if (obj) obj.rotation.y += 0.01;
+    controls.update();
+    renderer.render(scene, camera);
+  }
+
+  resize();
+  makeFromText("сфера");
+  animate();
+</script>
+
+</body>
+</html>
